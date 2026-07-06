@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Garden Market | Premium Grow a Garden Marketplace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* --- CORE CONFIG & RESET --- */
+        :root {
+            --bg-main: #0a0f0d;
+            --bg-card: rgba(15, 25, 20, 0.6);
+            --border-glass: rgba(0, 230, 118, 0.15);
+            --primary: #00e676;
+            --primary-glow: rgba(0, 230, 118, 0.4);
+            --text-main: #f5fafd;
+            --text-muted: #8fa095;
+            
+            /* Rarity Colors */
+            --rarity-mythic: #ff3d00;
+            --rarity-legendary: #ffea00;
+            --rarity-rare: #00e5ff;
+            --rarity-uncommon: #b2ff59;
+            --rarity-common: #9e9e9e;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        /* --- LOADING SCREEN --- */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: #050a07;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .loader-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(0,230,118,0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            filter: drop-shadow(0 0 10px var(--primary));
+        }
+        .loader-text {
+            margin-top: 20px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: var(--primary);
+            text-transform: uppercase;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+
+        /* --- SCROLL PROGRESS & UTILITIES --- */
+        #scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), #b2ff59);
+            z-index: 1001;
+            width: 0%;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- STICKY NAVBAR --- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: all 0.4s ease;
+            background: transparent;
+            border-bottom: 1px solid transparent;
+        }
+        header.scrolled {
+            background: rgba(10, 15, 13, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 10px 0;
+        }
+        .nav-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            transition: padding 0.4s ease;
+        }
+        header.scrolled .nav-wrapper {
+            padding: 10px 0;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #fff;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo span {
+            color: var(--primary);
+            text-shadow: 0 0 10px var(--primary-glow);
+        }
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+            text-shadow: 0 0 8px var(--primary-glow);
+        }
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .search-trigger, .cart-trigger, .login-btn {
+            background: none;
+            border: none;
+            color: var(--text-main);
+            font-size: 1.2rem;
+            cursor: pointer;
+            position: relative;
+            transition: transform 0.2s, color 0.3s;
+        }
+        .search-trigger:hover, .cart-trigger:hover {
+            color: var(--primary);
+            transform: scale(1.1);
+        }
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            background: var(--primary);
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 8px var(--primary);
+        }
+        .login-btn {
+            background: rgba(255,255,255,0.05);
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid var(--border-glass);
+            transition: all 0.3s;
+        }
+        .login-btn:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 15px var(--primary);
+        }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-top: 80px;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 50%, rgba(0, 230, 118, 0.15) 0%, rgba(10,15,13,1) 70%);
+        }
+        .hero-particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .particle {
+            position: absolute;
+            background: rgba(0, 230, 118, 0.4);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: floatUp 8s infinite linear;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(105vh) translateX(0) scale(0); opacity: 0; }
+            50% { opacity: 0.6; }
+            100% { transform: translateY(-5vh) translateX(50px) scale(1); opacity: 0; }
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            padding: 0 20px;
+        }
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .hero-title span {
+            background: linear-gradient(135deg, #fff 30%, var(--primary));
+            background-clip: text; /* standard property for compatibility */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: #000;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0, 230, 118, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 30px var(--primary);
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.03);
+            color: #fff;
+            border: 1px solid var(--border-glass);
+            backdrop-filter: blur(5px);
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-3px);
+            border-color: rgba(0, 230, 118, 0.4);
+        }
+
+        /* --- MARKETPLACE (SHOP) --- */
+        .shop-section {
+            padding: 100px 0;
+            position: relative;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 50px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .section-title h2 {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .section-title p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+        }
+        .search-input {
+            width: 100%;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-glass);
+            padding: 12px 16px 12px 45px;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
+            background: rgba(255,255,255,0.06);
+        }
+        .search-container i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+        .search-container .search-input:focus + i {
+            color: var(--primary);
+        }
+
+        /* PRODUCT GRID & CARDS */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+        }
+        .product-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+        .product-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(0, 230, 118, 0.4);
+            box-shadow: 0 10px 30px rgba(0, 230, 118, 0.1);
+        }
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0,230,118,0.05) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+        .product-card:hover::before {
+            opacity: 1;
+        }
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .rarity-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.05);
+        }
+        .rarity-badge.mythic { color: var(--rarity-mythic); border: 1px solid rgba(255,61,0,0.3); background: rgba(255,61,0,0.1); }
+        .rarity-badge.legendary { color: var(--rarity-legendary); border: 1px solid rgba(255,234,0,0.3); background: rgba(255,234,0,0.1); }
+        .rarity-badge.rare { color: var(--rarity-rare); border: 1px solid rgba(0,229,255,0.3); background: rgba(0,229,255,0.1); }
+        .rarity-badge.uncommon { color: var(--rarity-uncommon); border: 1px solid rgba(178,255,89,0.3); background: rgba(178,255,89,0.1); }
+        .rarity-badge.common { color: var(--rarity-common); border: 1px solid rgba(158,158,158,0.3); background: rgba(158,158,158,0.1); }
+        
+        .stock-tag {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .stock-tag.low-stock {
+            color: #ff9100;
+        }
+        .img-container {
+            width: 100%;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .product-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: transform 0.4s ease;
+        }
+        .product-card:hover .product-img {
+            transform: scale(1.08) rotate(2deg);
+        }
+        .product-info {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        .product-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .product-rating {
+            color: #ffd600;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+        .product-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            line-clamp: 2;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+        .product-price {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        .product-price span {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin-left: 2px;
+        }
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            border: 1px solid var(--border-glass);
+            background: rgba(255,255,255,0.03);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-add {
+            padding: 0 14px;
+            height: 38px;
+            border-radius: 8px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+        .btn-add:hover {
+            box-shadow: 0 0 12px var(--primary);
+            transform: translateY(-1px);
+        }
+        
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 50px 0;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            display: none;
+        }
+
+        /* --- SLIDING CART PANEL --- */
+        .cart-panel {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 100%;
+            max-width: 420px;
+            height: 100vh;
+            background: #0d1411;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            z-index: 1100;
+            transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--border-glass);
+        }
+        .cart-panel.open {
+            right: 0;
+        }
+        .cart-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cart-header h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .cart-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .cart-close:hover {
+            color: #fff;
+        }
+        .cart-items {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* Empty Cart Style */
+        .cart-empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            gap: 15px;
+        }
+        .cart-empty-state i {
+            font-size: 3rem;
+            color: rgba(255,255,255,0.05);
+        }
+
+        /* Cart Item Structure */
+        .cart-item {
+            display: flex;
+            gap: 15px;
+            background: rgba(255,255,255,0.02);
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.05);
+            align-items: center;
+            position: relative;
+        }
+        .cart-item-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            padding: 5px;
+        }
+        .cart-item-details {
+            flex-grow: 1;
+        }
+        .cart-item-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+        .cart-item-price {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .qty-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        .qty-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--primary);
+        }
+        .qty-val {
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-width: 15px;
+            text-align: center;
+        }
+        .cart-item-remove {
+            background: none;
+            border: none;
+            color: rgba(255,61,0,0.6);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 5px;
+            transition: color 0.2s;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+        }
+        .cart-item-remove:hover {
+            color: var(--rarity-mythic);
+        }
+
+        .cart-footer {
+            padding: 24px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.15);
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .summary-total {
+            color: var(--primary);
+            font-weight: 800;
+        }
+        .btn-checkout {
+            width: 100%;
+            justify-content: center;
+            font-size: 1.05rem;
+        }
+
+        /* --- MODAL (QUICK VIEW) --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(5, 10, 7, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1200;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: #0d1411;
+            border: 1px solid var(--border-glass);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 650px;
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+        }
+        @media(max-width: 600px) {
+            .modal-content { grid-template-columns: 1fr; }
+        }
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: #fff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+        .modal-close:hover { background: rgba(255,255,255,0.15); }
+        
+        .modal-left {
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+        .modal-left img {
+            max-width: 100%;
+            max-height: 220px;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0,230,118,0.15));
+        }
+        .modal-right {
+            padding: 35px 30px;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-meta {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .modal-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .modal-price-row {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 25px;
+        }
+        .modal-price-row span {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: auto;
+        }
+        .modal-qty {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.02);
+            padding: 4px;
+        }
+        .modal-qty .qty-btn { border: none; width: 32px; height: 32px; }
+        .modal-qty .qty-val { min-width: 30px; }
+
+        /* --- FAQ SECTION --- */
+        .faq-section {
+            padding: 100px 0;
+            background: linear-gradient(180deg, transparent, rgba(0, 230, 118, 0.02), transparent);
+        }
+        .faq-grid {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: border-color 0.3s;
+        }
+        .faq-item:hover {
+            border-color: rgba(0,230,118,0.3);
+        }
+        .faq-question {
+            padding: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .faq-question i {
+            transition: transform 0.3s;
+            color: var(--primary);
+        }
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s cubic-bezier(0, 1, 0, 1), padding 0.3s ease;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        .faq-item.open .faq-question i {
+            transform: rotate(180deg);
+        }
+        .faq-item.open .faq-answer {
+            max-height: 1000px;
+            padding: 0 20px 20px 20px;
+            transition: max-height 0.5s cubic-bezier(1, 0, 1, 0), padding 0.3s ease;
+        }
+
+        /* --- BACK TO TOP --- */
+        #back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 45px;
+            height: 45px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,230,118,0.3);
+            z-index: 99;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        #back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        #back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 25px var(--primary);
+        }
+
+        /* --- TOAST NOTIFICATIONS --- */
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .toast {
+            background: #0d1411;
+            border-left: 4px solid var(--primary);
+            border-top: 1px solid var(--border-glass);
+            border-right: 1px solid var(--border-glass);
+            border-bottom: 1px solid var(--border-glass);
+            padding: 16px 24px;
+            border-radius: 0 8px 8px 0;
+            color: #fff;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(-120%);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .toast.show {
+            transform: translateX(0);
+        }
+        .toast i { color: var(--primary); font-size: 1.1rem; }
+
+        /* --- BLUR OVERLAY FOR SYSTEM CLOSURES --- */
+        .backdrop-blur {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1050;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            backdrop-filter: blur(4px);
+        }
+        .backdrop-blur.visible { opacity: 1; pointer-events: auto; }
+
+        /* --- FOOTER --- */
+        footer {
+            background: #060a08;
+            border-top: 1px solid var(--border-glass);
+            padding: 60px 0 30px 0;
+            margin-top: 50px;
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr repeat(3, 1fr);
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        @media(max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr; gap: 30px; }
+            .section-header { flex-direction: column; align-items: flex-start; }
+            .search-container { max-width: 100%; }
+        }
+        .footer-brand p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 12px;
+            line-height: 1.6;
+            max-width: 320px;
+        }
+        .footer-col h4 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        .footer-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--primary); }
+        
+        .social-icons {
+            display: flex;
+            gap: 15px;
+        }
+        .social-icon {
+            width: 38px;
+            height: 38px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        .social-icon:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 12px var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .footer-bottom {
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        .footer-bottom-links {
+            display: flex;
+            gap: 20px;
+        }
+        .footer-bottom-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+        .footer-bottom-links a:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <div id="scroll-progress"></div>
+
+    <div id="loader">
+        <div class="loader-spinner"></div>
+        <div class="loader-text">Loading Garden Market</div>
+    </div>
+
+    <div class="backdrop-blur" id="ui-blur"></div>
+
+    <header id="main-header">
+        <div class="container nav-wrapper">
+            <a href="#" class="logo">🌱 <span>Garden Market</span></a>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active">Home</a></li>
+                <li><a href="#shop" class="nav-link">Shop</a></li>
+                <li><a href="#faq" class="nav-link">FAQ</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="search-trigger" id="search-nav-btn" title="Search Seeds"><i class="fas fa-search"></i></button>
+                <button class="cart-trigger" id="cart-nav-btn" title="View Cart">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span class="cart-badge" id="cart-count">0</span>
+                </button>
+                <button class="login-btn">Login</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-particles" id="hero-particles-container"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Buy Rare <br><span>Grow a Garden Seeds</span></h1>
+            <p class="hero-subtitle">The Best Grow a Garden Marketplace. Buy your favorite Grow a Garden seeds instantly at affordable prices through automated and verified secure listing distributions.</p>
+            <div class="hero-buttons">
+                <a href="#shop" class="btn btn-primary">🛒 Shop Now</a>
+                <a href="#shop" class="btn btn-secondary" id="featured-scroll-btn"><span>⭐ Featured Seeds</span></a>
+            </div>
+        </div>
+    </section>
+
+    <section class="shop-section" id="shop">
+        <div class="container">
+            <div class="section-header">
+                <div class="section-title">
+                    <h2>Marketplace Catalog</h2>
+                    <p>Instant, non-custodial delivery on confirmation assets</p>
+                </div>
+                <div class="search-container">
+                    <input type="text" class="search-input" id="catalog-search" placeholder="Search seed assets...">
+                    <i class="fas fa-search"></i>
+                </div>
+            </div>
+
+            <div class="product-grid" id="catalog-grid">
+                </div>
+            
+            <div class="no-results" id="search-fallback">
+                <i class="fas fa-seedling" style="font-size: 2.5rem; color: rgba(255,255,255,0.05); margin-bottom:15px; display:block;"></i>
+                No specialized seeds match your search query.
+            </div>
+        </div>
+    </section>
+
+    <div class="cart-panel" id="sidebar-cart">
+        <div class="cart-header">
+            <h3>🛒 Item Cart Basket</h3>
+            <button class="cart-close" id="close-cart-btn"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items-container">
+            </div>
+        <div class="cart-footer">
+            <div class="summary-row">
+                <span>Total Balance:</span>
+                <span class="summary-total" id="cart-total-view">0.00 GEL</span>
+            </div>
+            <button class="btn btn-primary btn-checkout" id="checkout-action-trigger">💳 Instant Checkout Purchase</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="details-modal">
+        <div class="modal-content">
+            <button class="modal-close" id="close-modal-btn"><i class="fas fa-times"></i></button>
+            <div class="modal-left">
+                <img id="modal-target-img" src="images/bamboo.png" alt="Seed Showcase Asset">
+            </div>
+            <div class="modal-right">
+                <div class="modal-meta">
+                    <span class="rarity-badge" id="modal-target-rarity">Common</span>
+                    <span class="stock-tag" id="modal-target-stock">In Stock</span>
+                </div>
+                <h3 class="modal-title" id="modal-target-name">Seed Specification</h3>
+                <p class="modal-desc" id="modal-target-desc">Detailed descriptions relative to specific inventory instances and performance behaviors within specialized instances.</p>
+                
+                <div class="modal-price-row" id="modal-target-price">0.00 <span>GEL</span></div>
+                
+                <div class="modal-actions">
+                    <div class="modal-qty">
+                        <button class="qty-btn" id="modal-qty-minus"><i class="fas fa-minus"></i></button>
+                        <span class="qty-val" id="modal-qty-display">1</span>
+                        <button class="qty-btn" id="modal-qty-plus"><i class="fas fa-plus"></i></button>
+                    </div>
+                    <button class="btn btn-primary" id="modal-add-to-cart-trigger" style="flex-grow: 1;">Add To Cart</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="faq-section" id="faq">
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 50px;">
+                <h2 style="font-size: 2rem; font-weight:700; margin-bottom: 10px;">Frequently Asked Questions</h2>
+                <p style="color: var(--text-muted);">Everything you need to know about purchasing seed mechanics</p>
+            </div>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">How do I receive my seeds after buying? <i class="fas fa-chevron-down"></i></div>
+                    <div class="faq-answer">Once your checkout processing completes by clicking buy, you will be systematically prompt-transferred directly to our Discord verification core server framework where system operators match delivery structures directly in-game.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Are these products compatible with Roblox Grow a Garden? <i class="fas fa-chevron-down"></i></div>
+                    <div class="faq-answer">Yes, all catalog options directly match designated variables modeled precisely after configurations matching standard ecosystem attributes native to Grow a Garden frameworks.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">What payment variables are accepted natively? <i class="fas fa-chevron-down"></i></div>
+                    <div class="faq-answer">Our verification architecture processes global regional assets scaled inside Georgian Lari (GEL) structures with dynamic payment methods handled through peer configurations.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="toast-container" id="toast-carrier"></div>
+
+    <button id="back-to-top" title="Top"><i class="fas fa-arrow-up"></i></button>
+
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="logo">🌱 <span>Garden Market</span></a>
+                    <p>The premium specialized gaming inventory clearinghouse provisioning pristine seed configurations safely to community player bases.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Marketplace</h4>
+                    <ul class="footer-links">
+                        <li><a href="#shop">All Seeds</a></li>
+                        <li><a href="#shop">Mythic Class</a></li>
+                        <li><a href="#shop">Legendary Tier</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Support Center</h4>
+                    <ul class="footer-links">
+                        <li><a href="#faq">Knowledge Base</a></li>
+                        <li><a href="https://discord.gg/sVNecBVdh" target="_blank">Discord Ticket</a></li>
+                        <li><a href="#faq">Refund Terms</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Community Connect</h4>
+                    <div class="social-icons">
+                        <a href="https://discord.gg/sVNecBVdh" class="social-icon" target="_blank" title="Discord Link Base"><i class="fab fa-discord"></i></a>
+                        <a href="#" class="social-icon" title="Twitter System Access"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-icon" title="Youtube Video Reference"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <div>&copy; 2026 Garden Market. Powered by community garden configurations.</div>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* --- MEMORY APPARATUS DATABASES (SEED PRODUCTS) --- */
+        const PRODUCT_DATABASE = [
+            { id: "hypno-bloom", name: "Hypno Bloom", price: 4.00, rarity: "mythic", stock: 12, desc: "Emits specialized cognitive resonance fields that disorient baseline entities approaching peripheral plant structures.", rating: 5 },
+            { id: "dragon-breath", name: "Dragon Breath", price: 4.00, rarity: "mythic", stock: 8, desc: "Incinerates immediate combat grid tiles using recurring thermo-elemental combustion bursts.", rating: 5 },
+            { id: "moon-bloom", name: "Moon Bloom", price: 2.50, rarity: "legendary", stock: 24, desc: "Harnesses cosmic illumination states to multiply resource generation across nearby plots.", rating: 5 },
+            { id: "venom-spitter", name: "Venom Spitter", price: 2.00, rarity: "rare", stock: 19, desc: "Launches acidic biological projectiles across prolonged range lines slowing targets down.", rating: 5 },
+            { id: "venus-fly-trap", name: "Venus Fly Trap", price: 1.50, rarity: "uncommon", stock: 35, desc: "Snaps aggressively clean at standard perimeter threats with mechanical automated actions.", rating: 5 },
+            { id: "bamboo", name: "Bamboo", price: 0.25, rarity: "common", stock: 142, desc: "Ultra-high baseline speed growth material perfectly optimized for fast structural defenses.", rating: 5 }
+        ];
+
+        // System state variables
+        let systemCart = [];
+        let contextualModalProductId = null;
+
+        /* --- EVENT DELEGATION & DOM INITIALIZATION --- */
+        document.addEventListener("DOMContentLoaded", () => {
+            initializeHeroEngine();
+            renderMarketplaceCatalog(PRODUCT_DATABASE);
+            attachGlobalListeners();
+            
+            // Kill Loader Panel screen gracefully
+            setTimeout(() => {
+                const loader = document.getElementById("loader");
+                loader.style.opacity = "0";
+                setTimeout(() => loader.style.display = "none", 500);
+            }, 600);
+        });
+
+        /* --- HERO FLOATING PARTICLE REPLICATOR --- */
+        function initializeHeroEngine() {
+            const cluster = document.getElementById("hero-particles-container");
+            const elementVolume = 25;
+            for(let i = 0; i < elementVolume; i++) {
+                const particle = document.createElement("div");
+                particle.className = "particle";
+                
+                // Random scale distribution values
+                const dimensionalScale = Math.random() * 8 + 4;
+                particle.style.width = `${dimensionalScale}px`;
+                particle.style.height = `${dimensionalScale}px`;
+                
+                // Coordinates distribution placements
+                particle.style.left = `${Math.random() * 100}%`;
+                
+                // Varied animation rate factors
+                particle.style.animationDelay = `${Math.random() * 6}s`;
+                particle.style.animationDuration = `${Math.random() * 6 + 6}s`;
+                
+                cluster.appendChild(particle);
+            }
+        }
+
+        /* --- MAIN CATALOG RENDER SYSTEM --- */
+        function renderMarketplaceCatalog(collection) {
+            const targetGrid = document.getElementById("catalog-grid");
+            const fallback = document.getElementById("search-fallback");
+            targetGrid.innerHTML = "";
+            
+            if(collection.length === 0) {
+                fallback.style.display = "block";
+                return;
+            } else {
+                fallback.style.display = "none";
+            }
+
+            collection.forEach(item => {
+                const card = document.createElement("div");
+                card.className = "product-card";
+                card.setAttribute("data-id", item.id);
+                
+                // Star compiler loop structure
+                let ratingStars = "";
+                for(let s=0; s<item.rating; s++) { ratingStars += '<i class="fas fa-star"></i> '; }
+
+                card.innerHTML = `
+                    <div class="card-top">
+                        <span class="rarity-badge ${item.rarity}">${item.rarity}</span>
+                        <span class="stock-tag ${item.stock <= 15 ? 'low-stock' : ''}">Stock: ${item.stock}</span>
+                    </div>
+                    <div class="img-container">
+                        <img class="product-img" src="images/${item.id}.png" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300e676\' stroke-width=\'1\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><path d=\'M12 2L2 7l10 5 10-5-10-5z\'/><path d=\'M2 17l10 5 10-5\'/><path d=\'M2 12l10 5 10-5\'></svg>';" alt="${item.name}">
+                    </div>
+                    <div class="product-info">
+                        <h4 class="product-name">${item.name}</h4>
+                        <div class="product-rating">${ratingStars}</div>
+                        <p class="product-desc">${item.desc}</p>
+                        <div class="product-footer">
+                            <div class="product-price">${item.price.toFixed(2)}<span>GEL</span></div>
+                            <div class="card-actions">
+                                <button class="btn-icon" onclick="openQuickViewModal('${item.id}')" title="Quick View Specs"><i class="fas fa-eye"></i></button>
+                                <button class="btn-add" onclick="pushToCartEngine('${item.id}', 1)">📥 Add</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                targetGrid.appendChild(card);
+            });
+        }
+
+        /* --- LIVE REALTIME SEARCH INPUT ALGORITHM --- */
+        document.getElementById("catalog-search").addEventListener("input", (e) => {
+            const queryClean = e.target.value.toLowerCase().trim();
+            const collectionFiltered = PRODUCT_DATABASE.filter(item => 
+                item.name.toLowerCase().includes(queryClean) || 
+                item.rarity.toLowerCase().includes(queryClean) ||
+                item.desc.toLowerCase().includes(queryClean)
+            );
+            renderMarketplaceCatalog(collectionFiltered);
+        });
+
+        /* --- CENTRAL STATE CART MANAGEMENT ENGINE --- */
+        function pushToCartEngine(productId, structuralQuantity) {
+            const assetReference = PRODUCT_DATABASE.find(p => p.id === productId);
+            if(!assetReference) return;
+
+            const existingCartItemIndex = systemCart.findIndex(c => c.id === productId);
+            
+            if(existingCartItemIndex > -1) {
+                systemCart[existingCartItemIndex].quantity += structuralQuantity;
+            } else {
+                systemCart.push({
+                    id: assetReference.id,
+                    name: assetReference.name,
+                    price: assetReference.price,
+                    quantity: structuralQuantity
+                });
+            }
+
+            dispatchToast(`Added ${structuralQuantity}x ${assetReference.name} to checkout bundle.`);
+            refreshCartStatePresentation();
+        }
+
+        function adjustCartItemVolume(productId, operationalVariance) {
+            const targetingIndex = systemCart.findIndex(c => c.id === productId);
+            if(targetingIndex === -1) return;
+
+            systemCart[targetingIndex].quantity += operationalVariance;
+            
+            if(systemCart[targetingIndex].quantity <= 0) {
+                systemCart.splice(targetingIndex, 1);
+                dispatchToast("Asset execution complete. Removed from cart.");
+            }
+            refreshCartStatePresentation();
+        }
+
+        function ejectCartRecordCompletely(productId) {
+            systemCart = systemCart.filter(c => c.id !== productId);
+            dispatchToast("Asset configuration segment removed from order profile.");
+            refreshCartStatePresentation();
+        }
+
+        function refreshCartStatePresentation() {
+            const renderingTarget = document.getElementById("cart-items-container");
+            const absoluteCountBadge = document.getElementById("cart-count");
+            const dynamicTotalView = document.getElementById("cart-total-view");
+            
+            renderingTarget.innerHTML = "";
+            
+            let incrementalUnitsCounter = 0;
+            let integratedAccumulatingPrice = 0.00;
+
+            if(systemCart.length === 0) {
+                renderingTarget.innerHTML = `
+                    <div class="cart-empty-state">
+                        <i class="fas fa-shopping-basket"></i>
+                        <p>Your current cart is empty.</p>
+                    </div>
+                `;
+            } else {
+                systemCart.forEach(item => {
+                    incrementalUnitsCounter += item.quantity;
+                    integratedAccumulatingPrice += (item.price * item.quantity);
+
+                    const elementsRow = document.createElement("div");
+                    elementsRow.className = "cart-item";
+                    elementsRow.innerHTML = `
+                        <img class="cart-item-img" src="images/${item.id}.png" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2300e676\' stroke-width=\'1\'><path d=\'M12 2L2 7l10 5 10-5-10-5z\'/></svg>';" alt="${item.name}">
+                        <div class="cart-item-details">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${(item.price * item.quantity).toFixed(2)} GEL</div>
+                            <div class="cart-item-controls">
+                                <button class="qty-btn" onclick="adjustCartItemVolume('${item.id}', -1)"><i class="fas fa-minus"></i></button>
+                                <span class="qty-val">${item.quantity}</span>
+                                <button class="qty-btn" onclick="adjustCartItemVolume('${item.id}', 1)"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <button class="cart-item-remove" onclick="ejectCartRecordCompletely('${item.id}')" title="Remove Record"><i class="fas fa-trash-alt"></i></button>
+                    `;
+                    renderingTarget.appendChild(elementsRow);
+                });
+            }
+
+            absoluteCountBadge.textContent = incrementalUnitsCounter;
+            dynamicTotalView.textContent = `${integratedAccumulatingPrice.toFixed(2)} GEL`;
+        }
+
+        /* --- QUICK VIEW SYSTEM EXPANSION MODAL OPERATORS --- */
+        function openQuickViewModal(productId) {
+            const scopeTargetObject = PRODUCT_DATABASE.find(p => p.id === productId);
+            if(!scopeTargetObject) return;
+
+            contextualModalProductId = productId;
+            
+            document.getElementById("modal-target-img").src = `images/${scopeTargetObject.id}.png`;
+            document.getElementById("modal-target-name").textContent = scopeTargetObject.name;
+            document.getElementById("modal-target-desc").textContent = scopeTargetObject.desc;
+            document.getElementById("modal-target-price").innerHTML = `${scopeTargetObject.price.toFixed(2)} <span>GEL</span>`;
+            
+            const elementRarityBadge = document.getElementById("modal-target-rarity");
+            elementRarityBadge.className = `rarity-badge ${scopeTargetObject.rarity}`;
+            elementRarityBadge.textContent = scopeTargetObject.rarity;
+
+            document.getElementById("modal-target-stock").textContent = `Stock: ${scopeTargetObject.stock}`;
+            document.getElementById("modal-qty-display").textContent = "1";
+
+            toggleModalStateVisibility(true);
+        }
+
+        function toggleModalStateVisibility(forceStateOpen) {
+            const overlayContainer = document.getElementById("details-modal");
+            const surfaceBlurOverlay = document.getElementById("ui-blur");
+            if(forceStateOpen) {
+                overlayContainer.classList.add("open");
+                surfaceBlurOverlay.classList.add("visible");
+            } else {
+                overlayContainer.classList.remove("open");
+                if(!document.getElementById("sidebar-cart").classList.contains("open")) {
+                    surfaceBlurOverlay.classList.remove("visible");
+                }
+            }
+        }
+
+        /* --- SYSTEM GLOBAL RECURRENT LISTENERS ASSIGNMENT --- */
+        function attachGlobalListeners() {
+            const targetHeader = document.getElementById("main-header");
+            const backToTopBtn = document.getElementById("back-to-top");
+            const progressIndicator = document.getElementById("scroll-progress");
+            const cartPanel = document.getElementById("sidebar-cart");
+            const configurationBlurLayer = document.getElementById("ui-blur");
+
+            // Scroll Reactive Logic
+            window.addEventListener("scroll", () => {
+                const currentOffsetHeight = window.scrollY;
+                const totalScrollableWindowHeight = document.documentElement.scrollHeight - window.innerHeight;
+                
+                // Dynamic header transform scaling tracking
+                if(currentOffsetHeight > 50) {
+                    targetHeader.classList.add("scrolled");
+                } else {
+                    targetHeader.classList.remove("scrolled");
+                }
+
+                // Back to Top trigger parameters display limits
+                if(currentOffsetHeight > 400) {
+                    backToTopBtn.classList.add("visible");
+                } else {
+                    backToTopBtn.classList.remove("visible");
+                }
+
+                // Scroll Bar width computations linear matching values
+                if(totalScrollableWindowHeight > 0) {
+                    const trackingCalculationPercentage = (currentOffsetHeight / totalScrollableWindowHeight) * 100;
+                    progressIndicator.style.width = `${trackingCalculationPercentage}%`;
+                }
+            });
+
+            // Back-To-Top Button Activation
+            backToTopBtn.addEventListener("click", () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Navbar Auto Scroll Action
+            document.getElementById("featured-scroll-btn").addEventListener("click", (e) => {
+                e.preventDefault();
+                document.getElementById("shop").scrollIntoView({ behavior: "smooth" });
+            });
+
+            // Cart Interaction Panel Toggle Triggers
+            document.getElementById("cart-nav-btn").addEventListener("click", () => {
+                cartPanel.classList.add("open");
+                configurationBlurLayer.classList.add("visible");
+            });
+            document.getElementById("close-cart-btn").addEventListener("click", () => {
+                cartPanel.classList.remove("open");
+                if(!document.getElementById("details-modal").classList.contains("open")) {
+                    configurationBlurLayer.classList.remove("visible");
+                }
+            });
+
+            // Strategic Interface Search Button Redirection Linkage
+            document.getElementById("search-nav-btn").addEventListener("click", () => {
+                document.getElementById("shop").scrollIntoView({ behavior: "smooth" });
+                document.getElementById("catalog-search").focus();
+            });
+
+            // Click Overlay background dismissals elements handlers
+            configurationBlurLayer.addEventListener("click", () => {
+                cartPanel.classList.remove("open");
+                toggleModalStateVisibility(false);
+                configurationBlurLayer.classList.remove("visible");
+            });
+
+            document.getElementById("close-modal-btn").addEventListener("click", () => toggleModalStateVisibility(false));
+
+            // Modal Quantity Manipulations
+            document.getElementById("modal-qty-minus").addEventListener("click", () => {
+                const counter = document.getElementById("modal-qty-display");
+                let explicitValue = parseInt(counter.textContent);
+                if(explicitValue > 1) counter.textContent = --explicitValue;
+            });
+            document.getElementById("modal-qty-plus").addEventListener("click", () => {
+                const counter = document.getElementById("modal-qty-display");
+                let explicitValue = parseInt(counter.textContent);
+                counter.textContent = ++explicitValue;
+            });
+
+            // Modal Add Configuration Callback Execution linking State Management
+            document.getElementById("modal-add-to-cart-trigger").addEventListener("click", () => {
+                if(!contextualModalProductId) return;
+                const allocationAmountValue = parseInt(document.getElementById("modal-qty-display").textContent);
+                pushToCartEngine(contextualModalProductId, allocationAmountValue);
+                toggleModalStateVisibility(false);
+            });
+
+            // Dynamic Interactive Accordion Action Registration
+            document.querySelectorAll(".faq-question").forEach(questionElement => {
+                questionElement.addEventListener("click", () => {
+                    const parentNodeItem = questionElement.parentElement;
+                    const systemIsCurrentlyActive = parentNodeItem.classList.contains("open");
+                    
+                    // Collapse alternative matching nodes configurations (Single view compliance)
+                    document.querySelectorAll(".faq-item").forEach(item => item.classList.remove("open"));
+                    
+                    if(!systemIsCurrentlyActive) {
+                        parentNodeItem.classList.add("open");
+                    }
+                });
+            });
+
+            // Checkout Handlers Routing directly safely over to Designated Community Verification framework
+            document.getElementById("checkout-action-trigger").addEventListener("click", () => {
+                if(systemCart.length === 0) {
+                    dispatchToast("⚠️ Action cancelled: Your item cart is empty.");
+                    return;
+                }
+                dispatchToast("🚀 Provisioning instant secure gateway redirect connection processing...");
+                setTimeout(() => {
+                    window.open("https://discord.gg/sVNecBVdh", "_blank");
+                }, 1000);
+            });
+        }
+
+        /* --- TOAST SYSTEM EMISSION NOTIFIER UTILITY --- */
+        function dispatchToast(transmissionMessageString) {
+            const containerNode = document.getElementById("toast-carrier");
+            const dynamicToastBubbleElement = document.createElement("div");
+            dynamicToastBubbleElement.className = "toast";
+            dynamicToastBubbleElement.innerHTML = `
+                <i class="fas fa-bolt"></i>
+                <span>${transmissionMessageString}</span>
+            `;
+            
+            containerNode.appendChild(dynamicToastBubbleElement);
+            
+            // Allow layout system allocation rendering cycle spaces
+            setTimeout(() => dynamicToastBubbleElement.classList.add("show"), 50);
+
+            // Systematic Auto Garbage Sweep cleanup processes
+            setTimeout(() => {
+                dynamicToastBubbleElement.classList.remove("show");
+                setTimeout(() => { dynamicToastBubbleElement.remove(); }, 400);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
